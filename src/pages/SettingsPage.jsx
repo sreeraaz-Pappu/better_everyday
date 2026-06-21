@@ -3,7 +3,7 @@ import { Settings, Moon, Sun, CloudFog, Sunset, Download, Trash2, Database, Chec
 import { useLocalData } from "../hooks/useLocalData";
 import { mockSettings } from "../data/mockData";
 import { supabase } from "../lib/supabaseClient";
-import { useAuth } from "../context/AuthContext";
+import { useAuth } from "../context/useAuth";
 import PageHeader from "../components/ui/PageHeader";
 import GlassCard from "../components/ui/GlassCard";
 import { Label, Input } from "../components/ui/Field";

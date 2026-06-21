@@ -143,7 +143,7 @@ export default function DesignPreview() {
     return () => {
       document.body.style.background = "";
     };
-  }, [bg]);
+  }, [activeBg.body]);
 
   return (
     <div className="min-h-screen text-ink p-6 sm:p-10 relative overflow-hidden">

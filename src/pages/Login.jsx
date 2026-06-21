@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Navigate } from "react-router-dom";
-import { useAuth } from "../context/AuthContext";
+import { useAuth } from "../context/useAuth";
 import GlassCard from "../components/ui/GlassCard";
 import { Label, Input, PrimaryButton } from "../components/ui/Field";
 

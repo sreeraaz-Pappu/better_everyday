@@ -1,10 +1,14 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { supabase } from "../lib/supabaseClient";
-import { useAuth } from "../context/AuthContext";
+import { useAuth } from "../context/useAuth";
 
 export function useLocalData(key, fallback) {
   const { user } = useAuth();
   const [value, setValue] = useState(fallback);
+  const fallbackRef = useRef(fallback);
+  useEffect(() => {
+    fallbackRef.current = fallback;
+  });
 
   useEffect(() => {
     if (!user) return;
@@ -16,7 +20,7 @@ export function useLocalData(key, fallback) {
       .eq("key", key)
       .maybeSingle()
       .then(({ data }) => {
-        if (active) setValue(data ? data.value : fallback);
+        if (active) setValue(data ? data.value : fallbackRef.current);
       });
     return () => {
       active = false;

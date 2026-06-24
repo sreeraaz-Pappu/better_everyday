@@ -21,3 +21,8 @@ export const navItems = [
   { to: "/ai-summary", label: "AI Summary", icon: Wand2 },
   { to: "/settings", label: "Settings", icon: Settings },
 ];
+
+// Bottom nav (mobile) can only fit a handful of tabs before truncation/overflow.
+// Keep the 5 most-used pages as primary tabs; the rest live behind "More".
+export const primaryNavItems = navItems.slice(0, 5);
+export const moreNavItems = navItems.slice(5);

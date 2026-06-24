@@ -1,10 +1,12 @@
 import { useState } from "react";
-import { History, Dumbbell, Beef, ListChecks, Scale } from "lucide-react";
+import { History, Dumbbell, Beef, ListChecks, Scale, ChevronRight } from "lucide-react";
 import { useLocalData } from "../hooks/useLocalData";
 import { daysBetween, formatPretty } from "../utils/date";
+import { DEFAULT_CHECKIN_ITEMS } from "../data/mockData";
 import PageHeader from "../components/ui/PageHeader";
 import GlassCard from "../components/ui/GlassCard";
 import EmptyState from "../components/ui/EmptyState";
+import DayDetailModal from "../components/history/DayDetailModal";
 
 const FILTERS = [
   { key: 7, label: "Last 7 days" },
@@ -16,8 +18,14 @@ const moodEmoji = { Happy: "😊", Tired: "😴", Stressed: "😣", Calm: "😌"
 
 export default function HistoryPage() {
   const [checkins] = useLocalData("checkins", []);
+  const [checkinItems] = useLocalData("checkinItems", DEFAULT_CHECKIN_ITEMS);
   const [body] = useLocalData("body", []);
+  const [diet] = useLocalData("diet", []);
+  const [supplements] = useLocalData("medicines", []);
+  const [workouts] = useLocalData("workouts", []);
+  const [tasks] = useLocalData("tasks", []);
   const [filter, setFilter] = useState(7);
+  const [selectedDate, setSelectedDate] = useState(null);
 
   const weightByDate = Object.fromEntries(body.map((b) => [b.date, b.weight]));
 
@@ -50,7 +58,11 @@ export default function HistoryPage() {
       ) : (
         <div className="flex flex-col gap-3">
           {rows.map((c) => (
-            <GlassCard key={c.date} className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <GlassCard
+              key={c.date}
+              onClick={() => setSelectedDate(c.date)}
+              className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 cursor-pointer"
+            >
               <div className="flex items-center gap-3">
                 <div className="w-12 h-12 rounded-2xl bg-ink-5 flex flex-col items-center justify-center shrink-0">
                   <span className="text-lg">{moodEmoji[c.mood] || "🙂"}</span>
@@ -75,11 +87,24 @@ export default function HistoryPage() {
                     <Scale size={13} /> {weightByDate[c.date]} kg
                   </span>
                 )}
+                <ChevronRight size={14} className="text-ink-30 shrink-0" />
               </div>
             </GlassCard>
           ))}
         </div>
       )}
+
+      <DayDetailModal
+        date={selectedDate}
+        onClose={() => setSelectedDate(null)}
+        checkins={checkins}
+        checkinItems={checkinItems}
+        body={body}
+        diet={diet}
+        supplements={supplements}
+        workouts={workouts}
+        tasks={tasks}
+      />
     </div>
   );
 }

@@ -14,11 +14,13 @@ const MEAL_TYPES = ["Breakfast", "Lunch", "Snacks", "Dinner"];
 function emptyDay(date) {
   return {
     date,
-    proteinGoal: 90,
+    proteinGoal: 70,
     proteinConsumed: 0,
-    fiberGoal: 30,
+    fiberGoal: 25,
     fiberConsumed: 0,
     calories: 0,
+    ironTaken: null,
+    hairTaken: null,
     meals: [],
     notes: "",
   };
@@ -155,6 +157,42 @@ export default function Diet() {
             value={todayEntry.calories}
             onChange={(e) => updateToday({ calories: parseFloat(e.target.value) || 0 })}
           />
+        </div>
+      </GlassCard>
+
+      <GlassCard>
+        <p className="text-sm text-ink-70 mb-3">Daily supplements</p>
+        <div className="flex flex-col gap-3">
+          {[
+            { key: "ironTaken", label: "Iron supplement" },
+            { key: "hairTaken", label: "Hair supplement" },
+          ].map(({ key, label }) => (
+            <div key={key} className="flex items-center justify-between">
+              <p className="text-sm text-ink">{label}</p>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => updateToday({ [key]: true })}
+                  className={`px-4 py-1.5 rounded-full text-sm transition-colors ${
+                    todayEntry[key] === true
+                      ? "bg-emerald-500 text-white"
+                      : "bg-ink-5 text-ink-40 hover:bg-ink-10"
+                  }`}
+                >
+                  Yes
+                </button>
+                <button
+                  onClick={() => updateToday({ [key]: false })}
+                  className={`px-4 py-1.5 rounded-full text-sm transition-colors ${
+                    todayEntry[key] === false && todayEntry[key] !== null
+                      ? "bg-rose-400 text-white"
+                      : "bg-ink-5 text-ink-40 hover:bg-ink-10"
+                  }`}
+                >
+                  No
+                </button>
+              </div>
+            </div>
+          ))}
         </div>
       </GlassCard>
 

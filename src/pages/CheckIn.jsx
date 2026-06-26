@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import {
   CalendarCheck,
@@ -25,6 +25,8 @@ const moodEmoji = {
   Stressed: "😣",
   Calm: "😌",
   Energetic: "⚡",
+  Neutral: "😐",
+  Sleepy: "🥱",
 };
 
 function slugify(label) {
@@ -41,20 +43,42 @@ export default function CheckIn() {
   const [checkins, setCheckins] = useLocalData("checkins", []);
   const [items, setItems] = useLocalData("checkinItems", DEFAULT_CHECKIN_ITEMS);
   const today = todayISO();
+  const isSunday = new Date(today).getDay() === 0;
   const existing = checkins.find((c) => c.date === today) || {};
 
-  const [form, setForm] = useState({
-    water: existing.water ?? 0,
-    sleep: existing.sleep ?? 7,
-    mood: existing.mood || "Calm",
-    notes: existing.notes || "",
-    ...Object.fromEntries(items.map((item) => [item.id, !!existing[item.id]])),
-  });
+  const emptyForm = { water: 0, sleep: 0, mood: "", notes: "", ...Object.fromEntries(items.map((item) => [item.id, false])) };
+
+  const [form, setForm] = useState(
+    isSunday ? emptyForm : {
+      water: existing.water ?? 0,
+      sleep: existing.sleep ?? 7,
+      mood: existing.mood || "Calm",
+      notes: existing.notes || "",
+      ...Object.fromEntries(items.map((item) => [item.id, !!existing[item.id]])),
+    }
+  );
   const [saved, setSaved] = useState(false);
   const [newItemLabel, setNewItemLabel] = useState("");
 
+  // Store an empty record for Sunday so history stays blank for this day
+  useEffect(() => {
+    if (isSunday && !checkins.find((c) => c.date === today)) {
+      setCheckins((prev) => [...prev, { date: today, ...emptyForm }]);
+    }
+  }, []);
+
   function update(key, value) {
-    setForm((f) => ({ ...f, [key]: value }));
+    setForm((f) => {
+      const updatedForm = { ...f, [key]: value };
+      // Auto-persist toggle items so they survive a refresh without needing Save
+      if (items.some((item) => item.id === key)) {
+        setCheckins((prev) => {
+          const others = prev.filter((c) => c.date !== today);
+          return [...others, { date: today, ...updatedForm }];
+        });
+      }
+      return updatedForm;
+    });
     setSaved(false);
   }
 
@@ -87,6 +111,19 @@ export default function CheckIn() {
       delete next[id];
       return next;
     });
+  }
+
+  if (isSunday) {
+    return (
+      <div className="flex flex-col gap-6 max-w-2xl">
+        <PageHeader icon={CalendarCheck} title="Daily Check-in" subtitle={formatLong(today)} />
+        <GlassCard className="flex flex-col items-center gap-3 py-10 text-center">
+          <span className="text-5xl">🛌</span>
+          <p className="text-lg font-display text-ink">Rest Day</p>
+          <p className="text-sm text-ink-40">Sundays are your break — no check-in needed. Recharge and come back tomorrow!</p>
+        </GlassCard>
+      </div>
+    );
   }
 
   return (
@@ -140,24 +177,40 @@ export default function CheckIn() {
           <p className="text-sm text-ink-70 mb-3 flex items-center gap-2">
             <GlassWater size={16} /> Water intake
           </p>
-          <div className="flex items-center justify-center gap-4">
+          <div className="flex items-center justify-center gap-3">
             <button
               type="button"
-              onClick={() => update("water", Math.max(0, form.water - 1))}
+              onClick={() => update("water", Math.max(0, parseFloat((form.water - 0.25).toFixed(2))))}
               className="w-9 h-9 rounded-full bg-ink-10 hover:bg-ink-20 flex items-center justify-center text-ink"
             >
               <Minus size={16} />
             </button>
-            <span className="text-2xl font-display text-ink w-14 text-center">{form.water}</span>
+            <input
+              type="number"
+              min="0"
+              max="10"
+              step="0.25"
+              value={form.water}
+              onChange={(e) => {
+                const val = e.target.value;
+                if (val === "" || val === "-") {
+                  update("water", 0);
+                } else {
+                  const parsed = parseFloat(val);
+                  if (!isNaN(parsed) && parsed >= 0) update("water", parsed);
+                }
+              }}
+              className="w-20 text-center text-2xl font-display py-1 rounded-xl bg-ink-5 border border-ink-10 text-ink outline-none focus:border-[var(--accent-1)]"
+            />
             <button
               type="button"
-              onClick={() => update("water", form.water + 1)}
+              onClick={() => update("water", parseFloat((form.water + 0.25).toFixed(2)))}
               className="w-9 h-9 rounded-full bg-ink-10 hover:bg-ink-20 flex items-center justify-center text-ink"
             >
               <Plus size={16} />
             </button>
           </div>
-          <p className="text-center text-xs text-ink-40 mt-2">glasses today</p>
+          <p className="text-center text-xs text-ink-40 mt-2">litres today</p>
         </GlassCard>
 
         <GlassCard>

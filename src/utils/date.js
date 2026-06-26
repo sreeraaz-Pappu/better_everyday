@@ -23,3 +23,7 @@ export function daysBetween(iso, fromIso = todayISO()) {
   const b = new Date(fromIso + "T00:00:00");
   return Math.round((b - a) / 86400000);
 }
+
+export function isSundayISO(iso) {
+  return new Date(iso + "T00:00:00").getDay() === 0;
+}

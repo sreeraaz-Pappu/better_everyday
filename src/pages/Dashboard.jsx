@@ -4,7 +4,7 @@ import { useLocalData } from "../hooks/useLocalData";
 import { mockSettings, DEFAULT_CHECKIN_ITEMS } from "../data/mockData";
 import { getCheckinIcon } from "../utils/checkinIcons";
 import { todayISO, formatLong } from "../utils/date";
-import { computeWellnessScore } from "../utils/wellness";
+import { computeWellnessScore, isRestDay } from "../utils/wellness";
 import GlassCard from "../components/ui/GlassCard";
 import StatCard from "../components/ui/StatCard";
 import ProgressRing from "../components/ui/ProgressRing";
@@ -20,6 +20,7 @@ export default function Dashboard() {
     checkins.find((c) => c.date === today) || checkins[checkins.length - 1] || {};
 
   const score = computeWellnessScore(todayCheckin);
+  const restDay = isRestDay(todayCheckin);
 
   const glowItems = items.map((item) => ({
     label: item.label,
@@ -40,52 +41,62 @@ export default function Dashboard() {
         <div className="text-sm text-ink-60 italic">"Soft days, strong glow."</div>
       </GlassCard>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <GlassCard className="md:col-span-1 flex flex-col items-center justify-center gap-3">
-          <p className="text-xs text-ink-50 uppercase tracking-wide">Daily Wellness Score</p>
-          <ProgressRing value={score} label="/ 100" sublabel="today" />
+      {restDay ? (
+        <GlassCard className="flex flex-col items-center gap-3 py-10 text-center">
+          <span className="text-5xl">🛌</span>
+          <p className="text-lg font-display text-ink">Rest Day</p>
+          <p className="text-sm text-ink-40">Sundays don't count — recharge and come back tomorrow stronger!</p>
         </GlassCard>
+      ) : (
+        <>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <GlassCard className="md:col-span-1 flex flex-col items-center justify-center gap-3">
+              <p className="text-xs text-ink-50 uppercase tracking-wide">Daily Wellness Score</p>
+              <ProgressRing value={score} label="/ 100" sublabel="today" />
+            </GlassCard>
 
-        <GlassCard className="md:col-span-2">
-          <p className="text-sm text-ink-70 mb-4 font-medium">Today's Glow Check ✨</p>
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-            {glowItems.map(({ label, done, icon: Icon }) => (
-              <motion.div
-                key={label}
-                whileHover={{ scale: 1.03 }}
-                className={`rounded-2xl p-3 flex flex-col items-center gap-2 border ${
-                  done
-                    ? "bg-gradient-to-br from-[var(--accent-1)]/25 to-[var(--accent-2)]/25 border-ink-15"
-                    : "bg-ink-5 border-ink-10"
-                }`}
-              >
-                <Icon size={18} className={done ? "text-ink" : "text-ink-40"} />
-                <span className={`text-xs ${done ? "text-ink" : "text-ink-40"}`}>{label}</span>
-                <span className={`text-[10px] ${done ? "text-[var(--accent-3)]" : "text-ink-30"}`}>
-                  {done ? "Done" : "Pending"}
-                </span>
-              </motion.div>
-            ))}
+            <GlassCard className="md:col-span-2">
+              <p className="text-sm text-ink-70 mb-4 font-medium">Today's Glow Check ✨</p>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                {glowItems.map(({ label, done, icon: Icon }) => (
+                  <motion.div
+                    key={label}
+                    whileHover={{ scale: 1.03 }}
+                    className={`rounded-2xl p-3 flex flex-col items-center gap-2 border ${
+                      done
+                        ? "bg-gradient-to-br from-[var(--accent-1)]/25 to-[var(--accent-2)]/25 border-ink-15"
+                        : "bg-ink-5 border-ink-10"
+                    }`}
+                  >
+                    <Icon size={18} className={done ? "text-ink" : "text-ink-40"} />
+                    <span className={`text-xs ${done ? "text-ink" : "text-ink-40"}`}>{label}</span>
+                    <span className={`text-[10px] ${done ? "text-[var(--accent-3)]" : "text-ink-30"}`}>
+                      {done ? "Done" : "Pending"}
+                    </span>
+                  </motion.div>
+                ))}
+              </div>
+            </GlassCard>
           </div>
-        </GlassCard>
-      </div>
 
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <StatCard icon={Dumbbell} label="Gym" value={todayCheckin.gym ? "Done" : "Skipped"} positive={!!todayCheckin.gym} />
-        <StatCard icon={Beef} label="Protein" value={todayCheckin.protein ? "Met" : "Missed"} positive={!!todayCheckin.protein} />
-        <StatCard icon={GlassWater} label="Water" value={todayCheckin.water ?? 0} suffix="glasses" />
-        <StatCard icon={Moon} label="Sleep" value={todayCheckin.sleep ?? 0} suffix="hrs" />
-      </div>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <StatCard icon={Dumbbell} label="Gym" value={todayCheckin.gym ? "Done" : "Skipped"} positive={!!todayCheckin.gym} />
+            <StatCard icon={Beef} label="Protein" value={todayCheckin.protein ? "Met" : "Missed"} positive={!!todayCheckin.protein} />
+            <StatCard icon={GlassWater} label="Water" value={todayCheckin.water ?? 0} suffix="L" />
+            <StatCard icon={Moon} label="Sleep" value={todayCheckin.sleep ?? 0} suffix="hrs" />
+          </div>
 
-      <GlassCard>
-        <div className="flex items-center justify-between mb-3">
-          <p className="text-sm text-ink-70 font-medium flex items-center gap-2">
-            <Smile size={16} /> Mood today
-          </p>
-          <span className="text-sm text-ink">{todayCheckin.mood || "Not logged"}</span>
-        </div>
-        <ProgressBar value={score} label="Overall glow" valueLabel={`${score}%`} />
-      </GlassCard>
+          <GlassCard>
+            <div className="flex items-center justify-between mb-3">
+              <p className="text-sm text-ink-70 font-medium flex items-center gap-2">
+                <Smile size={16} /> Mood today
+              </p>
+              <span className="text-sm text-ink">{todayCheckin.mood || "Not logged"}</span>
+            </div>
+            <ProgressBar value={score ?? 0} label="Overall glow" valueLabel={`${score ?? 0}%`} />
+          </GlassCard>
+        </>
+      )}
     </div>
   );
 }

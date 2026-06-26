@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { History, Dumbbell, Beef, ListChecks, Scale, ChevronRight } from "lucide-react";
 import { useLocalData } from "../hooks/useLocalData";
-import { daysBetween, formatPretty } from "../utils/date";
+import { daysBetween, formatPretty, isSundayISO } from "../utils/date";
 import { DEFAULT_CHECKIN_ITEMS } from "../data/mockData";
 import PageHeader from "../components/ui/PageHeader";
 import GlassCard from "../components/ui/GlassCard";
@@ -14,7 +14,7 @@ const FILTERS = [
   { key: null, label: "All time" },
 ];
 
-const moodEmoji = { Happy: "😊", Tired: "😴", Stressed: "😣", Calm: "😌", Energetic: "⚡" };
+const moodEmoji = { Happy: "😊", Tired: "😴", Stressed: "😣", Calm: "😌", Energetic: "⚡", Neutral: "😐", Sleepy: "🥱" };
 
 export default function HistoryPage() {
   const [checkins] = useLocalData("checkins", []);
@@ -30,6 +30,7 @@ export default function HistoryPage() {
   const weightByDate = Object.fromEntries(body.map((b) => [b.date, b.weight]));
 
   const rows = [...checkins]
+    .filter((c) => !isSundayISO(c.date))
     .filter((c) => filter === null || daysBetween(c.date) <= filter)
     .sort((a, b) => (a.date < b.date ? 1 : -1));
 

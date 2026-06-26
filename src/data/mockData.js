@@ -1,6 +1,6 @@
 import { isoDaysAgo } from "../utils/date";
 
-export const MOODS = ["Happy", "Tired", "Stressed", "Calm", "Energetic"];
+export const MOODS = ["Happy", "Tired", "Stressed", "Calm", "Energetic", "Neutral", "Sleepy"];
 
 export const TASK_CATEGORIES = ["Health", "Study", "Personal", "Beauty", "Random"];
 
@@ -10,7 +10,6 @@ export const DEFAULT_CHECKIN_ITEMS = [
   { id: "fiber", label: "Fiber", icon: "Wheat" },
   { id: "hair", label: "Hair", icon: "Sparkles" },
   { id: "skin", label: "Skin", icon: "Droplet" },
-  { id: "medicine", label: "Medicines", icon: "Pill" },
 ];
 
 const moodCycle = ["Happy", "Energetic", "Tired", "Calm", "Happy", "Stressed", "Calm", "Energetic", "Happy", "Tired", "Calm", "Energetic", "Happy", "Stressed"];
@@ -22,8 +21,7 @@ export const mockCheckins = Array.from({ length: 14 }, (_, i) => {
     gym: dayIndex % 2 === 0 || dayIndex === 0,
     protein: dayIndex % 3 !== 0,
     tasks: dayIndex % 4 !== 1,
-    medicine: dayIndex % 5 !== 2,
-    water: 4 + (dayIndex % 5),
+    water: parseFloat((1.0 + (dayIndex % 5) * 0.25).toFixed(2)),
     sleep: 6 + ((dayIndex % 4) * 0.5),
     mood: moodCycle[i],
     notes: dayIndex === 0 ? "Feeling soft and glowy today ✨" : "",
@@ -42,9 +40,9 @@ export const mockDiet = Array.from({ length: 7 }, (_, i) => {
   const dayIndex = 6 - i;
   return {
     date: isoDaysAgo(dayIndex),
-    proteinGoal: 90,
+    proteinGoal: 70,
     proteinConsumed: 55 + (dayIndex % 5) * 8,
-    fiberGoal: 30,
+    fiberGoal: 25,
     fiberConsumed: 14 + (dayIndex % 4) * 5,
     calories: 1500 + (dayIndex % 4) * 120,
     meals: [
